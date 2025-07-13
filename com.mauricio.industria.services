@@ -1,0 +1,18 @@
+package com.mauricio.industria.services;
+
+import java.util.List;
+import java.util.Optional;
+
+import com.mauricio.industria.models.entities.Producto;
+
+public interface ProductoService {
+	
+	List<Producto> listar();
+	
+	Optional<Producto> obtenerporId(Long id);
+	
+	Producto insertar(Producto producto);
+	Producto editar(Producto producto, Long id);
+	Producto eliminar(Long id);
+	
+}
