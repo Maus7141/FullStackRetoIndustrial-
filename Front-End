@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Industria - Gestión de Productos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f0f2f5;
+    }
+
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 1rem;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-top: 1rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: white;
+    }
+
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f5f5f5;
+    }
+
+    .actions button {
+      margin-right: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      tr {
+        margin-bottom: 1rem;
+      }
+
+      td {
+        padding-left: 50%;
+        position: relative;
+      }
+
+      td::before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding-left: 0.5rem;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+
+      td:nth-of-type(1)::before { content: "Nombre"; }
+      td:nth-of-type(2)::before { content: "Descripción"; }
+      td:nth-of-type(3)::before { content: "Precio"; }
+      td:nth-of-type(4)::before { content: "Acciones"; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Industria - Gestión de Productos</h1>
+  </header>
+
+  <main>
+    <h2>Agregar / Editar Producto</h2>
+    <form id="productoForm">
+      <input type="hidden" id="productoId">
+      <input type="text" id="nombre" placeholder="Nombre del producto" required>
+      <input type="text" id="descripcion" placeholder="Descripción" required>
+      <input type="number" id="precio" placeholder="Precio" required min="0" step="0.01">
+      <div class="error" id="mensajeError"></div>
+      <button type="submit">Guardar</button>
+    </form>
+
+    <h2>Lista de Productos</h2>
+    <table id="tablaProductos">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Productos se insertarán aquí -->
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    const form = document.getElementById('productoForm');
+    const tabla = document.getElementById('tablaProductos').querySelector('tbody');
+    const mensajeError = document.getElementById('mensajeError');
+
+    let productos = [];
+    let editandoId = null;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const descripcion = document.getElementById('descripcion').value.trim();
+      const precio = document.getElementById('precio').value.trim();
+
+      if (!nombre || !descripcion || !precio) {
+        mensajeError.textContent = "Todos los campos son obligatorios.";
+        return;
+      }
+
+      if (editandoId !== null) {
+        const index = productos.findIndex(p => p.id === editandoId);
+        productos[index] = { id: editandoId, nombre, descripcion, precio };
+        editandoId = null;
+      } else {
+        productos.push({
+          id: Date.now(),
+          nombre,
+          descripcion,
+          precio
+        });
+      }
+
+      form.reset();
+      mensajeError.textContent = '';
+      renderTabla();
+    });
+
+    function renderTabla() {
+      tabla.innerHTML = '';
+      productos.forEach(producto => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${producto.nombre}</td>
+          <td>${producto.descripcion}</td>
+          <td>$${parseFloat(producto.precio).toFixed(2)}</td>
+          <td class="actions">
+            <button onclick="editarProducto(${producto.id})">Editar</button>
+            <button onclick="eliminarProducto(${producto.id})">Eliminar</button>
+          </td>
+        `;
+        tabla.appendChild(fila);
+      });
+    }
+
+    function editarProducto(id) {
+      const producto = productos.find(p => p.id === id);
+      if (producto) {
+        document.getElementById('nombre').value = producto.nombre;
+        document.getElementById('descripcion').value = producto.descripcion;
+        document.getElementById('precio').value = producto.precio;
+        editandoId = producto.id;
+      }
+    }
+
+    function eliminarProducto(id) {
+      productos = productos.filter(p => p.id !== id);
+      renderTabla();
+    }
+  </script>
+</body>
+</html>
